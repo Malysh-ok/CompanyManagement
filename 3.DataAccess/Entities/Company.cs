@@ -21,7 +21,7 @@ public class Company
     /// <summary>
     /// Комментарий.
     /// </summary>
-    [MaxLength(200, ErrorMessage = "{0} может содержать не более {1} символов.")]
+    // TODO: [MaxLength(200, ErrorMessage = "{0} может содержать не более {1} символов.")]
     public string? Comment { get; set; }
     
     /// <summary>

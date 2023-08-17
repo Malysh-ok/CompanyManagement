@@ -14,6 +14,9 @@ public class Contact
     /// <summary>
     /// Полное имя (ФИО).
     /// </summary>
+    /// <remarks>
+    /// Вычисляемое поле.
+    /// </remarks>
     public string FullName { get; set; } = null!;
 
     /// <summary>

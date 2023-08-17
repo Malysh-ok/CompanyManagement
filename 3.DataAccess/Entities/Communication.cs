@@ -3,7 +3,7 @@
 namespace DataAccess.Entities;
 
 /// <summary>
-/// Средства коммуникации.
+/// Средство коммуникации.
 /// </summary>
 public class Communication
 {

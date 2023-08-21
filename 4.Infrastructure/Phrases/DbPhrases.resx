@@ -27,4 +27,7 @@
     <data name="DbUnknownError" xml:space="preserve">
         <value>Unknown Error: Unable to connect to the database.</value>
     </data>
+    <data name="NotSupportedByDbProvider" xml:space="preserve">
+        <value>Not supported by database provider.</value>
+    </data>
 </root>

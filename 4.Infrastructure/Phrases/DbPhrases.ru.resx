@@ -20,4 +20,7 @@
     <data name="DbUnknownError" xml:space="preserve">
         <value>Неизвестная ошибка: Невозможно подключиться к БД.</value>
     </data>
+    <data name="NotSupportedByDbProvider" xml:space="preserve">
+        <value>Не поддерживается поставщиком базы данных.</value>
+    </data>
 </root>

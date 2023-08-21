@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>App.$(MSBuildProjectName)</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\3.DataAccess\DataAccessManagement\DataAccessManagement.csproj" />
+      <ProjectReference Include="..\..\3.DataAccess\Migrator\Migrator.csproj" />
+      <ProjectReference Include="..\..\4.Infrastructure\AppComponents\AppExceptions\AppExceptions.csproj" />
+      <ProjectReference Include="..\..\4.Infrastructure\BaseComponents\BaseComponents.csproj" />
+    </ItemGroup>
+
+</Project>

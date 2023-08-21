@@ -1,12 +1,14 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using App.Infrastructure.DbConfigureManagement.Interfaces;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using DataAccess.DbConfigureManagement.Interfaces;
 using Infrastructure.BaseComponents.Components;
 using Infrastructure.BaseExtensions;
 using Infrastructure.Phrases;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace App.Infrastructure.DbConfigureManagement.DbProviderOptions;
+namespace DataAccess.DbConfigureManagement.DbProviderOptions;
 
 /// <summary>
 /// Опции (настройки) провайдера БД - PostgreSql.
@@ -45,6 +47,12 @@ public class PostgresqlOptions : IDbProviderOptions
     }
     
     /// <inheritdoc />
+    public Result<bool> CreateDatabaseDir(string connectionString)
+    {
+        return Result<bool>.Fail(new NotSupportedException(DbPhrases.NotSupportedByDbProvider));
+    }
+
+    /// <inheritdoc />
     public void ClearAutoincrementSequence(DbContext dbContext, 
         string autoincrementColumnName, params string[] tableNames)
     {
@@ -62,7 +70,7 @@ public class PostgresqlOptions : IDbProviderOptions
     }
 
     /// <inheritdoc />
-    public Result<string> FixConnectionString(string connectionString, string? rootPath)
+    public Result<string> FixConnectionString(string connectionString, string? databaseRootPath)
     {
         // По сути - ничего не делаем: просто пробрасываем connectionString
         return connectionString.IsNull()
@@ -71,7 +79,7 @@ public class PostgresqlOptions : IDbProviderOptions
     }
 
     /// <inheritdoc />
-    public string GetConnectionString(ConfigurationManager configuration)
+    public string GetConnectionString(IConfiguration configuration)
     {
         // TODO: Не тестировалось!
         return configuration.GetConnectionString("PostgreSqlConnection") ?? string.Empty;

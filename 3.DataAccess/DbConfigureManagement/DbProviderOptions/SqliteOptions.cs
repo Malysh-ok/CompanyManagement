@@ -1,11 +1,14 @@
-﻿using App.Infrastructure.DbConfigureManagement.Interfaces;
+﻿using System;
+using DataAccess.DbConfigureManagement.Interfaces;
 using Infrastructure.BaseComponents.Components;
+using Infrastructure.BaseComponents.Components.IO;
 using Infrastructure.BaseExtensions;
 using Infrastructure.Phrases;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace App.Infrastructure.DbConfigureManagement.DbProviderOptions;
+namespace DataAccess.DbConfigureManagement.DbProviderOptions;
 
 /// <summary>
 /// Опции (настройки) провайдера БД - SQLite.
@@ -40,7 +43,23 @@ public class SqliteOptions : IDbProviderOptions
         };
         return sqliteOptions;
     }
-    
+
+    /// <inheritdoc />
+    public Result<bool> CreateDatabaseDir(string connectionString)
+    {
+        var builder = new SqliteConnectionStringBuilder(connectionString);
+        var fi = new FileInfo(builder.DataSource);
+        try
+        {
+            Directory.CreateDirectory(fi.DirectoryName!);
+            return Result<bool>.Done(true);
+        }
+        catch (Exception ex)
+        {
+            return Result<bool>.Fail(ex);
+        }
+    }
+
     /// <inheritdoc />
     public void ClearAutoincrementSequence(DbContext dbContext, 
         string autoincrementColumnName, params string[] tableNames)
@@ -55,15 +74,23 @@ public class SqliteOptions : IDbProviderOptions
     }
 
     /// <inheritdoc />
-    public Result<string> FixConnectionString(string connectionString, string? rootPath)
+    /// <remarks>
+    /// Получаем абсолютный путь к БД из относительного.
+    /// </remarks>
+    public Result<string> FixConnectionString(string connectionString, string? databaseRootPath)
     {
-        return connectionString.IsNull()
-            ? Result<string>.Fail(new ArgumentException(DbPhrases.ConnectionStringError))
-            : Result<string>.Done(string.Format(connectionString, rootPath ?? string.Empty));
+        if (connectionString.IsNull())
+            Result<string>.Fail(new ArgumentException(DbPhrases.ConnectionStringError));
+                
+        var builder = new SqliteConnectionStringBuilder(connectionString);
+        builder.DataSource = Path.GetFullPath(
+            Path.Combine(databaseRootPath ?? string.Empty, builder.DataSource));
+        
+        return Result<string>.Done(builder.ToString());
     }
 
     /// <inheritdoc />
-    public string GetConnectionString(ConfigurationManager configuration)
+    public string GetConnectionString(IConfiguration configuration)
     {
         return configuration.GetConnectionString("SqliteConnection") ?? string.Empty;
     }

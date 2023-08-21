@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using App.Infrastructure.DbConfigureManagement.DbProviderOptions;
-using App.Infrastructure.DbConfigureManagement.Interfaces;
+using DataAccess.DbConfigureManagement.DbProviderOptions;
+using DataAccess.DbConfigureManagement.Interfaces;
 using Infrastructure.BaseComponents.Components;
 using Infrastructure.BaseExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace App.Infrastructure.DbConfigureManagement
+namespace DataAccess.DbConfigureManagement
 {
     /// <summary>
     /// Кофигуратор БД.
@@ -48,7 +48,10 @@ namespace App.Infrastructure.DbConfigureManagement
         /// <summary>
         /// Конструктор.
         /// </summary>
-        public DbConfigurator(ConfigurationManager configuration, string rootPath)
+        /// <param name="configuration">Конфигурация.</param>
+        /// <param name="databaseRootPath">Путь к корневой папке БД.</param>
+        /// <param name="isCreateDatabaseDir">Признак того, что корневую папку БД необходимо создать, если она отсутствует.</param>
+        internal DbConfigurator(IConfiguration configuration, string databaseRootPath, bool isCreateDatabaseDir = false)
         {
             ProviderOptions = GetProviderOptions();
             IsEncryptedConnectionString = false;
@@ -57,7 +60,34 @@ namespace App.Infrastructure.DbConfigureManagement
             var connectionStringPre = 
                 ProviderOptions.GetConnectionString(configuration);
             ProcessedConnectionString = 
-                GetProcessedConnectionString(connectionStringPre, rootPath);
+                GetProcessedConnectionString(connectionStringPre, databaseRootPath);
+            if (isCreateDatabaseDir)
+                ProviderOptions.CreateDatabaseDir(ProcessedConnectionString);
+        }
+
+        /// <inheritdoc cref="DbConfigurator(IConfiguration, string, bool)"/>
+        /// <summary>
+        /// Создание экземпляра <see cref="DbConfigurator"/>.
+        /// </summary>
+        public static DbConfigurator CreateDbConfigurator(IConfiguration configuration, string databaseRootPath, 
+            bool isCreateDatabaseDir = false)
+        {
+            return new DbConfigurator(configuration, databaseRootPath, isCreateDatabaseDir);
+        }
+        
+        /// <summary>
+        /// Создание экземпляра <see cref="DbConfigurator"/>, с использованием AppData в качестве корневой папки БД.
+        /// </summary>
+        public static DbConfigurator CreateDbConfiguratorWithAppData(bool isCreateDatabaseDir = false)
+        {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json")
+                .Build();
+            
+            var appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            return new DbConfigurator(configuration, appDataDir, isCreateDatabaseDir);
         }
         
         /// <summary>
@@ -73,8 +103,8 @@ namespace App.Infrastructure.DbConfigureManagement
         /// Получить обработанную строку подключения к БД.
         /// </summary>
         /// <param name="connectionStringPre">Строка подключения, полученная из конфигурации.</param>
-        /// <param name="rootPath">Путь к корневой папке приложения.</param>
-        private string GetProcessedConnectionString(string connectionStringPre, string? rootPath = null)
+        /// <param name="databaseRootPath">Путь к корневой папке БД.</param>
+        private string GetProcessedConnectionString(string connectionStringPre, string? databaseRootPath = null)
         {
             // Дешифруем строку подключения при необходимости
             string connStr;
@@ -88,13 +118,15 @@ namespace App.Infrastructure.DbConfigureManagement
                 connStr = connectionStringPre;
 
             // Корректируем строку подключения 
-            var resultConnStr = ProviderOptions.FixConnectionString(connStr, rootPath);
+            var resultConnStr = ProviderOptions.FixConnectionString(connStr, databaseRootPath);
             return !resultConnStr 
                 ? string.Empty          // при ошибке - возвращаем пустую строку (может лучше null ?)
                 : resultConnStr.Value;
         }        
         
-        /// <inheritdoc cref="IDbProviderOptions.GetDbContextsOptions{TDbContext}(DbContextOptionsBuilder{TDbContext}, string )"/>
+        /// <summary>
+        /// Получить параметры контекста БД.
+        /// </summary>
         [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
         public DbContextOptions<TDbContext> GetContextsOptions<TDbContext>() where TDbContext: DbContext
         {
@@ -107,6 +139,17 @@ namespace App.Infrastructure.DbConfigureManagement
         public void ModelBuilderInit(ModelBuilder modelBuilder)
         {
             ProviderOptions.ModelBuilderInit(modelBuilder);
+        }
+        
+        //////////////////
+        // TODO: Переделать получение через опции провайдера
+        public Action<DbContextOptionsBuilder<TDbContext>> DbContextOptionsBuilderDelegate<TDbContext>() where TDbContext: DbContext
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<TDbContext>();
+
+            void Action(DbContextOptionsBuilder<TDbContext> obj) => optionsBuilder.UseSqlite(ProcessedConnectionString);
+
+            return Action;
         }
     }
 }

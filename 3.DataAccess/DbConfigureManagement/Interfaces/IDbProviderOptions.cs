@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace App.Infrastructure.DbConfigureManagement.Interfaces;
+namespace DataAccess.DbConfigureManagement.Interfaces;
 
 /// <summary>
 /// Опции (настройки) провайдера БД.
@@ -10,20 +10,23 @@ namespace App.Infrastructure.DbConfigureManagement.Interfaces;
 public interface IDbProviderOptions
 {
     /// <summary>
+    /// Тип столбца БД, соответствующий сущности DateTime.
+    /// </summary>
+    /// <remarks>
+    /// Актуально только для определенных провайдеров БД.
+    /// </remarks>
+    string? DateTimeColumnType { get; }
+
+    /// <summary>
     /// Тип провайдера.
     /// </summary>
     DbProviderEnm DbProviderType { get; }
-
+    
     /// <summary>
     /// Признак того, что база данных является встраиваемой.
     /// </summary>
     bool IsEmbeddedDb { get; }
-    
-    /// <summary>
-    /// Тип столбца БД, соответствующий сущности DateTime.
-    /// </summary>
-    string? DateTimeColumnType { get; }
-    
+
     /// <summary>
     /// Наименование сборки с миграциями.
     /// </summary>
@@ -49,6 +52,14 @@ public interface IDbProviderOptions
         string autoincrementColumnName, params string[] tableNames);
 
     /// <summary>
+    /// Создание каталога БД.
+    /// </summary>
+    /// <remarks>
+    /// Актуально, по всей видимости, только для встраиваемых БД.
+    /// </remarks>
+    public Result<bool> CreateDatabaseDir(string connectionString);
+
+    /// <summary>
     /// Коррекция строки подключения.
     /// </summary>
     /// <remarks>
@@ -56,14 +67,14 @@ public interface IDbProviderOptions
     /// где в строке подключения указывается путь к файлу БД, этот путь и подлежит коррекции.
     /// </remarks>
     /// <param name="connectionString">Исходная строка подключения.</param>
-    /// <param name="rootPath">Путь к корневой папке приложения.</param>
-    Result<string> FixConnectionString(string connectionString, string? rootPath = null);
+    /// <param name="databaseRootPath">Путь к корневой папке БД.</param>
+    Result<string> FixConnectionString(string connectionString, string? databaseRootPath = null);
 
     /// <summary>
     /// Получить строку подключения из конфигурации.
     /// </summary>
     /// <param name="configuration">Конфигурация.</param>
-    string GetConnectionString (ConfigurationManager configuration);
+    string GetConnectionString (IConfiguration configuration);
         
     /// <summary>
     /// Получить параметры контекста БД.

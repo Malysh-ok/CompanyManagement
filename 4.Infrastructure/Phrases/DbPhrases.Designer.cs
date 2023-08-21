@@ -85,5 +85,14 @@ namespace Infrastructure.Phrases {
                 return ResourceManager.GetString("DbUnknownError", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not supported by database provider..
+        /// </summary>
+        public static string NotSupportedByDbProvider {
+            get {
+                return ResourceManager.GetString("NotSupportedByDbProvider", resourceCulture);
+            }
+        }
     }
 }

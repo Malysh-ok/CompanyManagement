@@ -7,22 +7,27 @@
         <RootNamespace>DataAccess.$(MSBuildProjectName)</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <!--Entity Framework Core не видит макрос $(SolutionDir), поэтому используем (к сожалению)  вариант с "..\..\..."-->
+        <OutputPath>..\..\$(Configuration)</OutputPath>
+<!--        <OutputPath>$(SolutionDir)$(Configuration)</OutputPath>-->
+
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.8">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.8" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.8" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Migrations\" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.10" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\4.Infrastructure\BaseExtensions\BaseExtensions.csproj" />
+      <ProjectReference Include="..\DbConfigureManagement\DbConfigureManagement.csproj" />
       <ProjectReference Include="..\Entities\Entities.csproj" />
     </ItemGroup>
 

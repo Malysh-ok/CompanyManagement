@@ -53,7 +53,7 @@ public class Communication
     /// Контакт.
     /// </summary>
     /// <inheritdoc cref="ContactId"/>
-    public Company Contact { get; set; } = null!;
+    public Contact Contact { get; set; } = null!;
 
     
     /// <summary>

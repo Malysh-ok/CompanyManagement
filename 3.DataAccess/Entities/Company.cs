@@ -40,7 +40,7 @@ public class Company
     /// <remarks>
     /// Связь с объектом-владельцем Contact.
     /// </remarks>
-    public Guid DecisionMakerId  { get; set; }
+    public Guid? DecisionMakerId  { get; set; }
     
     /// <summary>
     /// ЛПР.
@@ -75,12 +75,13 @@ public class Company
     /// <param name="level">Уровень доверия.</param>
     /// <param name="comment">Комментарий.</param>
     /// <param name="decisionMakerId">Идентификатор ЛПР (связь с таблицей Contact).</param>
-    public Company(Guid id, CompanyLevelEnm level, string? comment = null, Guid? decisionMakerId = null) : this()
+    public Company(Guid? id, CompanyLevelEnm level, string? comment = null, Guid? decisionMakerId = null) : this()
     {
-        Id = id;
+        if (id != null) 
+            Id = (Guid)id;
         Level = level;
         Comment = comment;
-        DecisionMakerId = decisionMakerId ?? Guid.Empty;
+        DecisionMakerId = decisionMakerId;
     }
 
     /// <summary>

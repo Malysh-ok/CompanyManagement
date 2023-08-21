@@ -1,6 +1,6 @@
 using App.AppInitializer;
-using DataAccess.DataAccessManagement;
 using DataAccess.DbConfigureManagement;
+using DataAccess.DbContext;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,20 +13,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Получаем Кофигуратор БД
-// var dbConfigurator = DbConfigurator.CreateDbConfigurator(
-//     builder.Configuration,
-//     builder.Environment.ContentRootPath
-// );
 var dbConfigurator = DbConfigurator.CreateDbConfiguratorWithAppData(true);
-dbConfigurator.MigrationsAssemblyName = "Migrator";
 // builder.Services.AddSingleton(dbConfigurator);   // внедряем конфигуратор
 
 // Внедряем контекст БД
-// builder.Services.AddDbContext<AppDbContext>(options  =>
-//     options.UseSqlite(dbConfigurator.ProcessedConnectionString)
-// );
-builder.Services.AddDbContext<AppDbContext>(_  =>
-    dbConfigurator.DbContextOptionsBuilderDelegate<AppDbContext>()
+builder.Services.AddDbContext<AppDbContext>(options  =>
+    dbConfigurator.UseDatabaseProvider(options)
 );
 
 
@@ -48,6 +40,6 @@ app.MapControllers();
 using var serviceScope = app.Services.CreateScope();
 
 // Инициализируем приложение
-var result = Initializer.Init(serviceScope.ServiceProvider);
+Initializer.Init(serviceScope.ServiceProvider);
 
 app.Run();

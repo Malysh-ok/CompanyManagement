@@ -111,4 +111,11 @@ public class PostgresqlOptions : IDbProviderOptions
             .HasAnnotation("Relational:Collation", "Russian_Russia.1251")    // правило сортировки
             .HasAnnotation("Relational:CType", "Russian_Russia.1251");       // набор символов
     }
+    
+    /// <inheritdoc />
+    public DbContextOptionsBuilder UseDatabaseProvider(DbContextOptionsBuilder optionsBuilder, string connectionString)
+    {
+        return optionsBuilder.UseNpgsql(connectionString);
+    }
+
 }

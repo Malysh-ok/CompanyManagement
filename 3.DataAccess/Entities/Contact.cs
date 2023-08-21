@@ -60,7 +60,7 @@ public class Contact
     /// <remarks>
     /// Связь с объектом-владельцем Company.
     /// </remarks>
-    public Guid CompanyId { get; set; }
+    public Guid? CompanyId { get; set; }
     
     /// <summary>
     /// Компания.
@@ -106,7 +106,7 @@ public class Contact
         FullName = $"{Surname} {Name}{middleName}";
         IsDecisionMaker = isDecisionMaker;
         JobTitle = jobTitle;
-        CompanyId = companyId ?? Guid.Empty;
+        CompanyId = companyId;
     }
 
     /// <summary>

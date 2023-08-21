@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace DataAccess.Migrator.Migrations
+namespace DataAccess.DbContext.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -37,7 +37,7 @@ namespace DataAccess.Migrator.Migrations
                     Comment = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
                     CreationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
                     ModificationTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    DecisionMakerId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    DecisionMakerId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

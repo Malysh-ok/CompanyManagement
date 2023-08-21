@@ -7,57 +7,35 @@
         <RootNamespace>DataAccess.$(MSBuildProjectName)</RootNamespace>
     </PropertyGroup>
 
-    <PropertyGroup>
-<!--
-        Entity Framework Core не видит макрос $(SolutionDir), поэтому используем (к сожалению)  вариант с "..\..\..."
-        Кроме того, этот и проект с контекстом БД должны компилироваться именно в $(Configuration),
-        чтобы Entity Framework Core была видна БД.
--->
-        <OutputPath>..\..\$(Configuration)</OutputPath>
-        <!--<OutputPath>$(SolutionDir)$(Configuration)</OutputPath>-->
-
-        <DebugType>embedded</DebugType>
-    </PropertyGroup>
-    
     <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.10" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DataAccessManagement\DataAccessManagement.csproj" />
+      <ProjectReference Include="..\..\4.Infrastructure\BaseExtensions\BaseExtensions.csproj" />
+      <ProjectReference Include="..\DbConfigureManagement\DbConfigureManagement.csproj" />
+      <ProjectReference Include="..\Entities\Entities.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <PropertyGroup>
             <!-- %3B is semicolon (;)  -->
-            
-            <!--Название файла проекта с контекстом БД-->
-            <_dbContextProjName>"DataAccessManagement.csproj"</_dbContextProjName>
-            
-            <_GetDbContextProjPath>
-                $dbContextProjPath = ""
-                $arr = "@(ProjectReference)".Replace("`r", "").Split("`n")
-                ForEach ($item in $arr){
-                    if ($item.Contains($(_dbContextProjName))) {
-                        $dbContextProjPath = $item
-                    }
-                }
-                $dbContextProjPath = [System.IO.Path]::Combine("$(ProjectDir)", $dbContextProjPath)
-                $dbContextProjPath = [System.IO.Path]::GetFullPath($dbContextProjPath)            
-            </_GetDbContextProjPath>
-            
-            <_MigratorKey> -- --migrationsAssembly $(ProjectName)</_MigratorKey>
 
             <!--Создаем первую миграцию-->
             <_AddFirstMigration>
                 Write-Host "Создаем первую миграцию" -ForegroundColor Green
                 Write-Host ""
-                $(_GetDbContextProjPath)
-                dotnet ef migrations add Initial -o Migrations -p "$(ProjectPath)" -s $dbContextProjPath -v -- --migrationsAssembly Migrator
+                dotnet ef migrations add Initial -o Migrations -p "$(ProjectPath)" -v
                 pause
             </_AddFirstMigration>
 
@@ -65,9 +43,8 @@
             <_AddMigration>
                 Write-Host "Создаем миграцию" -ForegroundColor Green
                 Write-Host ""
-                $(_GetDbContextProjPath)
                 $MigrationName = Read-Host "Введите название миграции"
-                dotnet ef migrations add $MigrationName -o Migrations -p "$(ProjectPath)" -v $(_MigratorKey)
+                dotnet ef migrations add $MigrationName -o Migrations -p "$(ProjectPath)" -v
                 pause
             </_AddMigration>
 
@@ -75,8 +52,7 @@
             <_RemoveMigration>
                 Write-Host "Удаляем последнюю миграцию" -ForegroundColor Green
                 Write-Host ""
-                $(_GetDbContextProjPath)
-                dotnet ef migrations remove -p "$(ProjectPath)" -s $dbContextProjPath -v $(_MigratorKey)
+                dotnet ef migrations remove -p "$(ProjectPath)" -v
                 pause
             </_RemoveMigration>
 
@@ -84,9 +60,8 @@
             <_UpdateDatabase>
                 Write-Host "Обновляем базу данных до последней миграции" -ForegroundColor Green
                 Write-Host ""
-                $(_GetDbContextProjPath)
-                Read-Host "Выполните сборку (а лучше - пересборку) проекта '$(ProjectName)' и нажмите 'Enter'"
-                dotnet ef database update -p "$(ProjectPath)" -v --no-build $(_MigratorKey)
+<!--                Read-Host "Выполните сборку (а лучше - пересборку) проекта '$(ProjectName)' и нажмите 'Enter'"-->
+                dotnet ef database update -p "$(ProjectPath)" -v <!--&#45;&#45;no-build -->
                 pause
             </_UpdateDatabase>
 
@@ -96,4 +71,6 @@
         <WriteLinesToFile File="$(ProjectDir)Scripts\Создать миграцию.ps1" Lines="$(_AddMigration)" WriteOnlyWhenDifferent="true" Overwrite="true" Encoding="windows-1251" />
         <WriteLinesToFile File="$(ProjectDir)Scripts\Удалить последнюю миграцию.ps1" Lines="$(_RemoveMigration)" WriteOnlyWhenDifferent="true" Overwrite="true" Encoding="windows-1251" />
         <WriteLinesToFile File="$(ProjectDir)Scripts\Обновить базу данных до последней миграции.ps1" Lines="$(_UpdateDatabase)" WriteOnlyWhenDifferent="true" Overwrite="true" Encoding="windows-1251" />
-    </Target></Project>
+    </Target>
+
+</Project>

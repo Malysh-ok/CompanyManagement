@@ -3,7 +3,7 @@ using DataAccess.DbConfigureManagement;
 using Infrastructure.BaseExtensions;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace DataAccess.DataAccessManagement
+namespace DataAccess.DbContext
 {
     /// <summary>
     /// Фабрика создания контекста БД (используется при создании миграций).

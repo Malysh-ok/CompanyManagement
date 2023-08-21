@@ -118,4 +118,10 @@ public class SqliteOptions : IDbProviderOptions
         // Ничего не делаем
     }
 
+    /// <inheritdoc />
+    public DbContextOptionsBuilder UseDatabaseProvider(DbContextOptionsBuilder optionsBuilder, string connectionString)
+    {
+        return optionsBuilder.UseSqlite(connectionString);
+    }
+
 }

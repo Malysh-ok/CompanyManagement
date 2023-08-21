@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\3.DataAccess\DataAccessManagement\DataAccessManagement.csproj" />
+      <ProjectReference Include="..\..\3.DataAccess\DbContext\DbContext.csproj" />
       <ProjectReference Include="..\..\3.DataAccess\DbConfigureManagement\DbConfigureManagement.csproj" />
       <ProjectReference Include="..\AppInitializer\AppInitializer.csproj" />
     </ItemGroup>

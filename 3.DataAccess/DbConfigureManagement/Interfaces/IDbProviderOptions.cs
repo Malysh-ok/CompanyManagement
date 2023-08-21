@@ -94,4 +94,10 @@ public interface IDbProviderOptions
     /// </summary>
     /// <param name="modelBuilder">Экземпляр <see cref="ModelBuilder"/>.</param>
     void ModelBuilderInit(ModelBuilder modelBuilder);
+
+    /// <summary>
+    /// Настроить контекст БД для подключения к базе данных текущего поставщика.
+    /// </summary>
+    public DbContextOptionsBuilder UseDatabaseProvider(DbContextOptionsBuilder optionsBuilder, string connectionString);
+
 }

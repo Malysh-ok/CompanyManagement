@@ -140,16 +140,11 @@ namespace DataAccess.DbConfigureManagement
         {
             ProviderOptions.ModelBuilderInit(modelBuilder);
         }
-        
-        //////////////////
-        // TODO: Переделать получение через опции провайдера
-        public Action<DbContextOptionsBuilder<TDbContext>> DbContextOptionsBuilderDelegate<TDbContext>() where TDbContext: DbContext
+
+        /// <inheritdoc cref="IDbProviderOptions.UseDatabaseProvider(DbContextOptionsBuilder, string)"/>
+        public DbContextOptionsBuilder UseDatabaseProvider(DbContextOptionsBuilder optionsBuilder)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<TDbContext>();
-
-            void Action(DbContextOptionsBuilder<TDbContext> obj) => optionsBuilder.UseSqlite(ProcessedConnectionString);
-
-            return Action;
+            return ProviderOptions.UseDatabaseProvider(optionsBuilder, ProcessedConnectionString);
         }
     }
 }

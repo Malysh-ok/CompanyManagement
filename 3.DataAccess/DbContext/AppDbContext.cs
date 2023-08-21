@@ -3,9 +3,9 @@ using DataAccess.Entities.Enums;
 using Infrastructure.BaseExtensions.ValueTypes;
 using Microsoft.EntityFrameworkCore;
 
-namespace DataAccess.DataAccessManagement;
+namespace DataAccess.DbContext;
 
-public sealed partial class AppDbContext : DbContext
+public sealed partial class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
 {
     /// <summary>
     /// Строка подключения к БД.
@@ -43,13 +43,6 @@ public sealed partial class AppDbContext : DbContext
     {
         _connectionString = Database.GetConnectionString()!;
     }
-    
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (optionsBuilder.IsConfigured) return;
-        
-        optionsBuilder.UseSqlite(_connectionString);
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,7 +52,7 @@ public sealed partial class AppDbContext : DbContext
             entity.ToTable($"Companies",
                 t => t.HasComment("Компании"));
 
-            entity.Property(c => c.Id).ValueGeneratedOnAdd();
+            entity.Property(c => c.Id).ValueGeneratedNever();
             
             entity.Property(c => c.Level)
                 .HasConversion(
@@ -78,6 +71,14 @@ public sealed partial class AppDbContext : DbContext
                 .HasForeignKey<Company>(c => c.DecisionMakerId)
                 .HasConstraintName("FK_Companies_DecisionMakerId")
                 .OnDelete(DeleteBehavior.Restrict);
+            
+                        
+            // Заполнение данными
+            entity.HasData(
+                new Company(Guid.NewGuid(), CompanyLevelEnm.First, "Добавлено с помощью миграции")
+            );
+
+
         });
         
         // Создание модели сотрудников. 
@@ -86,7 +87,7 @@ public sealed partial class AppDbContext : DbContext
             entity.ToTable($"Contacts",
                 t => t.HasComment("Сотрудники"));
 
-            entity.Property(c => c.Id).ValueGeneratedOnAdd();
+            entity.Property(c => c.Id).ValueGeneratedNever();
             
             // Вычисляемое поле FullName
             entity.Property(c => c.FullName)
@@ -111,7 +112,7 @@ public sealed partial class AppDbContext : DbContext
             entity.ToTable($"Communications",
                 t => t.HasComment("Средства коммуникации"));
 
-            entity.Property(c => c.Id).ValueGeneratedOnAdd();
+            entity.Property(c => c.Id).ValueGeneratedNever();
             
             entity.Property(c => c.Type)
                 .HasConversion(

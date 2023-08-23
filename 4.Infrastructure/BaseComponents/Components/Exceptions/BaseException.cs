@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection;
 using Infrastructure.BaseExtensions;
 
 namespace Infrastructure.BaseComponents.Components.Exceptions
@@ -69,20 +70,30 @@ namespace Infrastructure.BaseComponents.Components.Exceptions
             string message = null, Exception innerException = null,
             string localLangName = null, string localMessage = null) where TEx: Exception
         {
-            if (localLangName.IsNullOrEmpty())
-            {
-                var ex = (TEx)Activator.CreateInstance(typeof(TEx), 
-                    message, innerException);
+            // Получаем сообщение, в зависимости от языка.
+            if (!localLangName.IsNullOrEmpty())
+                message = GetRealMessage(message, localLangName, localMessage);
 
-                return ex;
-            }
-            else
-            {
-                var ex = (TEx)Activator.CreateInstance(typeof(TEx), 
-                    GetRealMessage(message, localLangName, localMessage), innerException);
+            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            
+            var constructor = typeof(TEx).GetConstructor(bindingFlags,
+                null, new[] {typeof(string), typeof(Exception)}, null);
+            if (constructor != null /*&& !message.IsNull() && ! innerException.IsNull()*/)
+                return (TEx)constructor.Invoke(new object[] {message, innerException});
+                
+            constructor = typeof(TEx).GetConstructor(bindingFlags,
+                null, new[] {typeof(string)}, null);
+            if (constructor != null /*&& !message.IsNull()*/)
+                return (TEx)constructor.Invoke(new object[] {message});
 
-                return ex;
-            }
+            constructor = typeof(TEx).GetConstructor(bindingFlags,
+                null, Array.Empty<Type>(), null);
+            if (constructor != null)
+                return (TEx)constructor.Invoke(null);
+
+            // Ошибка
+            throw CreateException($"Unable to instantiate {typeof(TEx)}.", null,
+                "ru", $"Невозможно создать экземпляр {typeof(TEx)}.");
         }
     }
 }

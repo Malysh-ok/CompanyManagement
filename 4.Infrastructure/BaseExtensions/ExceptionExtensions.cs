@@ -11,6 +11,23 @@ namespace Infrastructure.BaseExtensions
     public static class ExceptionExtensions
     {
         /// <summary>
+        /// Выброс исключения NullReferenceException если объект равен null.
+        /// </summary>
+        public static void AssertNotNull<T>(this T obj, string exceptionMessage) where T : class
+        {
+            if (obj == null)
+                throw new NullReferenceException(exceptionMessage);
+        }
+
+        /// <summary>
+        /// Проверка исключения на null.
+        /// </summary>
+        public static bool IsNull(this Exception ex)
+        {
+            return ex is null;
+        }
+
+        /// <summary>
         /// Получение строки с данными текущего и внутренних исключений.
         /// </summary>
         /// <param name="ex">Исключение.</param>
@@ -38,15 +55,6 @@ namespace Infrastructure.BaseExtensions
             } while (ex != null);
 
             return sb.ToString().Trim();
-        }
-
-        /// <summary>
-        /// Выброс исключения NullReferenceException если объект равен null.
-        /// </summary>
-        public static void AssertNotNull<T>(this T obj, string exceptionMessage) where T : class
-        {
-            if (obj == null)
-                throw new NullReferenceException(exceptionMessage);
         }
     }
 }

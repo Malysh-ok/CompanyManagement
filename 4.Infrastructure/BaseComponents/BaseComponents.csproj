@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <EnablePreviewFeatures>true</EnablePreviewFeatures>
-        <LangVersion>11</LangVersion>
+        <TargetFramework>net7.0</TargetFramework>
         <RootNamespace>Infrastructure.$(MSBuildProjectName)</RootNamespace>
     </PropertyGroup>
 

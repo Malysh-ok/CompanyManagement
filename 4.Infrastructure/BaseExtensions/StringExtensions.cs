@@ -546,6 +546,42 @@ namespace Infrastructure.BaseExtensions
         }
         
         /// <summary>
+        /// Преобразование строки к виду "CamelCase".
+        /// </summary>
+        /// <param name="source">Исходная строка.</param>
+        /// <param name="delimiter">Разделитель слов.</param>
+        public static string ToCamelCase(this string source, char delimiter = ' ')
+        {
+            var parts = source.Split(delimiter);
+            var newString = new StringBuilder();
+            
+            foreach (var p in parts)
+            {
+                newString.AppendFormat("{0}{1}", char.ToUpperInvariant(p[0]), p.Substring(1, p.Length - 1));
+            }
+            
+            return newString.ToString();
+        }
+        
+        /// <summary>
+        /// Преобразование строки к виду "LowerCamelCase".
+        /// </summary>
+        /// <param name="source">Исходная строка.</param>
+        /// <param name="delimiter">Разделитель слов.</param>
+        public static string ToLowerCamelCase(this string source, char delimiter = ' ')
+        {
+            var parts = source.Split(delimiter);
+            var newString = new StringBuilder();
+            
+            foreach (var p in parts)
+            {
+                newString.AppendFormat("{0}{1}", char.ToLowerInvariant(p[0]), p.Substring(1, p.Length - 1));
+            }
+            
+            return newString.ToString();
+        }
+        
+        /// <summary>
         /// Разделяет строку на пару "ключ - значение", используя разделитель delimiter (по умолчанию - ":").
         /// </summary>
         public static KeyValuePair<string, string> ToPairedValue(this string str, char delimiter = ':')

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DataAccess.DbContext;
 
-public sealed partial class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
+public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
 {
     /// <summary>
     /// Строка подключения к БД.
@@ -59,8 +59,6 @@ public sealed partial class AppDbContext : Microsoft.EntityFrameworkCore.DbConte
                     enm => enm.ToInt(),
                     i => i.ToEnumWithException<CompanyLevelEnm>()
                 );
-
-            entity.Property(c => c.Comment).HasMaxLength(200);
             
             entity.HasKey(c => c.Id)
                 .HasName("PK_Companies");
@@ -75,9 +73,8 @@ public sealed partial class AppDbContext : Microsoft.EntityFrameworkCore.DbConte
                         
             // Заполнение данными
             entity.HasData(
-                new Company(Guid.NewGuid(), CompanyLevelEnm.First, "Добавлено с помощью миграции")
+                new Company(Guid.NewGuid(), "Литобзор", CompanyLevelEnm.First, "Добавлено с помощью миграции")
             );
-
 
         });
         

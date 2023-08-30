@@ -4,16 +4,30 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>App.$(MSBuildProjectName)</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>bin\Debug\Main.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\Main.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.10" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.JsonMultipartFormDataSupport" Version="1.8.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\2.Domain\Models\Models.csproj" />
       <ProjectReference Include="..\..\3.DataAccess\DbContext\DbContext.csproj" />
       <ProjectReference Include="..\..\3.DataAccess\DbConfigureManagement\DbConfigureManagement.csproj" />
+      <ProjectReference Include="..\..\4.Infrastructure\AppComponents\SwaggerComponents\SwaggerComponents.csproj" />
+      <ProjectReference Include="..\..\4.Infrastructure\AspModule\Extensions\Extensions.csproj" />
       <ProjectReference Include="..\AppInitializer\AppInitializer.csproj" />
     </ItemGroup>
 

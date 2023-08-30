@@ -1,4 +1,6 @@
-﻿namespace DataAccess.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace DataAccess.Entities;
 
 /// <summary>
 /// Сотрудник компании.
@@ -10,7 +12,24 @@ public class Contact
     /// Идентификатор.
     /// </summary>
     public Guid Id  { get; set; }
-    
+
+    /// <summary>
+    /// Фамилия.
+    /// </summary>
+    [Required]
+    public string Surname { get; set; } = null!;
+
+    /// <summary>
+    /// Имя.
+    /// </summary>
+    [Required]
+    public string Name { get; set; } = null!;
+
+    /// <summary>
+    /// Отчество.
+    /// </summary>
+    public string? MiddleName { get; set; }
+        
     /// <summary>
     /// Полное имя (ФИО).
     /// </summary>
@@ -19,21 +38,6 @@ public class Contact
     /// </remarks>
     public string FullName { get; set; } = null!;
 
-    /// <summary>
-    /// Фамилия.
-    /// </summary>
-    public string Surname { get; set; } = null!;
-
-    /// <summary>
-    /// Имя.
-    /// </summary>
-    public string Name { get; set; } = null!;
-
-    /// <summary>
-    /// Отчество.
-    /// </summary>
-    public string? MiddleName { get; set; }
-    
     /// <summary>
     /// Признак того, что сотрудник является ЛПР.
     /// </summary>
@@ -47,11 +51,13 @@ public class Contact
     /// <summary>
     /// Дата создания.
     /// </summary>
+    [Required]
     public DateTime CreationTime { get; protected set; }
     
     /// <summary>
     /// Дата изменения.
     /// </summary>
+    [Required]
     public DateTime ModificationTime { get; protected set; }
     
     /// <summary>

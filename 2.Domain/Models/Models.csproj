@@ -7,4 +7,9 @@
         <RootNamespace>Domain.$(MSBuildProjectName)</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\3.DataAccess\DbContext\DbContext.csproj" />
+      <ProjectReference Include="..\..\4.Infrastructure\AppComponents\AppExceptions\AppExceptions.csproj" />
+    </ItemGroup>
+
 </Project>

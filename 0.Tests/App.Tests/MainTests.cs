@@ -2,7 +2,10 @@
 using App.Main.Controllers;
 using DataAccess.DbConfigureManagement;
 using DataAccess.DbContext;
+using DataAccess.Entities.Enums;
 using Domain.Models;
+using Infrastructure.AppComponents.AppExceptions;
+using Infrastructure.AppComponents.AppExceptions.CommunicationExceptions;
 using Infrastructure.AppComponents.AppExceptions.CompanyExceptions;
 using Infrastructure.BaseComponents.Components.Exceptions;
 using Infrastructure.BaseExtensions;
@@ -48,6 +51,27 @@ public class MainTests
         
         exList.Add(CompanyAlreadyExistsException.Create());
 
+        foreach (var e in exList)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    [TestMethod]
+    public void AppExceptionsTest()
+    {
+        var exList = new List<AppException>();
+
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("ru-RU");
+        exList.Add(CommunicationTypeException.Create(CommunicationTypeEnm.Phone));
+        exList.Add(CommunicationTypeException.Create(CommunicationTypeEnm.Email));
+        exList.Add(CommunicationTypeException.Create(CommunicationTypeEnm.All));
+        
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+        exList.Add(CommunicationTypeException.Create(CommunicationTypeEnm.Phone));
+        exList.Add(CommunicationTypeException.Create(CommunicationTypeEnm.Email));
+        exList.Add(CommunicationTypeException.Create(CommunicationTypeEnm.All));
+        
         foreach (var e in exList)
         {
             Console.WriteLine(e.Message);

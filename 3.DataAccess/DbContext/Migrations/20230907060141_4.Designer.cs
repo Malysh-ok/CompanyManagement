@@ -3,6 +3,7 @@ using System;
 using DataAccess.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.DbContext.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230907060141_4")]
+    partial class _4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.10");
@@ -89,11 +92,11 @@ namespace DataAccess.DbContext.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("61473611-b9cd-4ea8-bde8-2e1f547c36ec"),
+                            Id = new Guid("282fceba-385f-44b8-a633-cebcda811753"),
                             Comment = "Добавлено с помощью миграции",
-                            CreationTime = new DateTime(2023, 9, 7, 14, 56, 8, 132, DateTimeKind.Local).AddTicks(2639),
+                            CreationTime = new DateTime(2023, 9, 7, 9, 1, 40, 911, DateTimeKind.Local).AddTicks(9110),
                             Level = 3,
-                            ModificationTime = new DateTime(2023, 9, 7, 14, 56, 8, 132, DateTimeKind.Local).AddTicks(2651),
+                            ModificationTime = new DateTime(2023, 9, 7, 9, 1, 40, 911, DateTimeKind.Local).AddTicks(9122),
                             Name = "Литобзор"
                         });
                 });
@@ -147,14 +150,14 @@ namespace DataAccess.DbContext.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("3c2ed862-69f5-4df3-b6dd-f3f2f2a4e0d3"),
-                            CompanyId = new Guid("61473611-b9cd-4ea8-bde8-2e1f547c36ec"),
-                            CreationTime = new DateTime(2023, 9, 7, 14, 56, 8, 135, DateTimeKind.Local).AddTicks(5290),
+                            Id = new Guid("d239a4c2-3d24-4c6d-b142-82d212d3a34f"),
+                            CompanyId = new Guid("282fceba-385f-44b8-a633-cebcda811753"),
+                            CreationTime = new DateTime(2023, 9, 7, 9, 1, 40, 915, DateTimeKind.Local).AddTicks(5463),
                             FullName = "Иванов Иван Иванович",
                             IsDecisionMaker = false,
                             JobTitle = "Менеджер",
                             MiddleName = "Иванович",
-                            ModificationTime = new DateTime(2023, 9, 7, 14, 56, 8, 135, DateTimeKind.Local).AddTicks(5296),
+                            ModificationTime = new DateTime(2023, 9, 7, 9, 1, 40, 915, DateTimeKind.Local).AddTicks(5467),
                             Name = "Иван",
                             Surname = "Иванов"
                         });
@@ -165,13 +168,11 @@ namespace DataAccess.DbContext.Migrations
                     b.HasOne("DataAccess.Entities.Company", "Company")
                         .WithMany("Communications")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_Communications_CompanyId");
 
                     b.HasOne("DataAccess.Entities.Contact", "Contact")
                         .WithMany("Communications")
                         .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_Communications_ContactId");
 
                     b.Navigation("Company");
@@ -184,7 +185,7 @@ namespace DataAccess.DbContext.Migrations
                     b.HasOne("DataAccess.Entities.Contact", "DecisionMaker")
                         .WithOne()
                         .HasForeignKey("DataAccess.Entities.Company", "DecisionMakerId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_Companies_DecisionMakerId");
 
                     b.Navigation("DecisionMaker");
@@ -195,7 +196,6 @@ namespace DataAccess.DbContext.Migrations
                     b.HasOne("DataAccess.Entities.Company", "Company")
                         .WithMany("Contacts")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_Contacts_CompanyId");
 
                     b.Navigation("Company");

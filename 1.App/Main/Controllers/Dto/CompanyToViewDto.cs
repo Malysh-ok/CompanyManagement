@@ -29,7 +29,7 @@ public class CompanyToViewDto
     /// Идентификатор ЛПР.
     /// </summary>
     /// <remarks>
-    /// Связь с объектом-владельцем Contact.
+    /// Связь с сущностью-владельцем Contact.
     /// </remarks>
     public Guid? DecisionMakerId { get; protected set; }
 
@@ -37,7 +37,7 @@ public class CompanyToViewDto
     /// ФИО ЛПР.
     /// </summary>
     /// <remarks>
-    /// Связь с объектом-владельцем Contact.
+    /// Связь с сущностью-владельцем Contact.
     /// </remarks>
     public string? DecisionMakerFullName { get; protected set; }
     
@@ -59,19 +59,19 @@ public class CompanyToViewDto
     /// <summary>
     /// Конструктор.
     /// </summary>
-    /// <param name="newCompany">Экземпляр класса <see cref="Company"/>, откуда копируем денные.</param>
-    public CompanyToViewDto(Company newCompany)
+    /// <param name="company">Экземпляр класса <see cref="Company"/>, откуда копируем денные.</param>
+    public CompanyToViewDto(Company company)
     {
-        Id = newCompany.Id;
-        Name = newCompany.Name;
-        Level = newCompany.Level;
+        Id = company.Id;
+        Name = company.Name;
+        Level = company.Level;
         
-        DecisionMakerId = newCompany.DecisionMakerId;
-        DecisionMakerFullName = newCompany.DecisionMaker?.FullName;
+        DecisionMakerId = company.DecisionMakerId;
+        DecisionMakerFullName = company.DecisionMaker?.FullName;
 
-        Comment = newCompany.Comment;
-        CreationTime = newCompany.CreationTime;
-        ModificationTime = newCompany.ModificationTime;
+        Comment = company.Comment;
+        CreationTime = company.CreationTime;
+        ModificationTime = company.ModificationTime;
     }
 
     /// <summary>

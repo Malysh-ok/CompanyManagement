@@ -39,6 +39,7 @@ builder.Services.AddSwaggerGen(options =>
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
     
     options.SchemaFilter<SwaggerIgnoreFilter>();
+    options.SchemaFilter<SwaggerGenGuidFilter>();
 });
 // builder.Services.AddSwaggerGenNewtonsoftSupport();
 
@@ -53,6 +54,8 @@ builder.Services.AddDbContext<AppDbContext>(options  =>
 
 // Внедряем зависимости на Модели
 builder.Services.AddTransient<CompanyModel>();
+builder.Services.AddTransient<ContactModel>();
+builder.Services.AddTransient<CommunicationModel>();
 
 var app = builder.Build();
 
@@ -60,7 +63,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();             // TODO: разобраться с параметрами вызова метода.
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

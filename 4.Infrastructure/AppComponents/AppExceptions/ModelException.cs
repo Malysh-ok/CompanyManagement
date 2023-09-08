@@ -19,9 +19,9 @@ public class ModelException : AppException
     /// <summary>
     /// Создать экземпляр исключения.
     /// </summary>
-    public static ModelException Create(Exception? innerException = null)
+    public static ModelException Create(string modelName, Exception? innerException = null)
     {
-        return BaseException.CreateException<ModelException>("Ошибка обновления данных Модели.",
-            innerException, "ru", "Ошибка обновления данных Модели.");
+        return BaseException.CreateException<ModelException>($"Error updating Model {modelName} data.",
+            innerException, "ru", $"Ошибка обновления данных Модели {modelName}.");
     }
 }

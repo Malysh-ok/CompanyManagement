@@ -4,7 +4,7 @@ using Infrastructure.BaseComponents.Components.Exceptions;
 namespace Infrastructure.AppComponents.AppExceptions.CompanyExceptions;
 
 /// <summary>
-/// Исключение, если компания с таким названием уже существует.
+/// Исключение, если компания с таким идентификатором уже существует.
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class CompanyAlreadyExistsException : AppException

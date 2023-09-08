@@ -14,7 +14,7 @@ public class Company
     /// <summary>
     /// Основные свойства сущности.
     /// </summary>
-    public enum MainPropEnum
+    public enum CompanyMainPropEnum
     {
         // None = 0,
         Id = 1,
@@ -28,13 +28,14 @@ public class Company
     /// <summary>
     /// Идентификатор.
     /// </summary>
+    [SwaggerGenGuid]
     public Guid Id  { get; set; }
     
     /// <summary>
     /// Название.
     /// </summary>
     [Required]
-    [DefaultValue("Noname")]
+    [DefaultValue("CompanyName")]
     public string Name { get; set; } = null!;
 
     /// <summary>
@@ -47,7 +48,7 @@ public class Company
     /// Идентификатор ЛПР.
     /// </summary>
     /// <remarks>
-    /// Связь с объектом-владельцем Contact.
+    /// Связь с сущностью-владельцем Contact.
     /// </remarks>
     [DefaultValue(null)]
     public Guid? DecisionMakerId { get; set; }
@@ -121,28 +122,28 @@ public class Company
     /// Устанавливаем время модификации.
     /// </summary>
     /// <param name="dateTime">Время модификации.</param>
-    public void SetModificationTime(DateTime dateTime) => ModificationTime = dateTime;
+    public void SetModificationTime(DateTime? dateTime = null) => 
+        ModificationTime = dateTime ?? DateTime.Now;
 
     /// <summary>
-    /// Копируем данные из экземпляра класса <paramref name="newCompany"/> в текущий.
+    /// Копируем данные в <paramref name="companyTo"/>.
     /// </summary>
-    /// <param name="newCompany">Экземпляр класса, откуда копируем денные.</param>
-    /// <param name="modificationTime">Дата/время модификации.</param>
-    /// <param name="isUpdateModificationTime">Признак того, что обновляем дату/время модификации.</param>
-    /// <returns>Текущий измененный экземпляр класса.</returns>
-    public Company Copy(Company newCompany, DateTime? modificationTime = null, bool isUpdateModificationTime = false)
+    /// <param name="companyTo">Экземпляр класса, куда копируем денные.</param>
+    /// <param name="isCopyCreationTime">Признак копирования даты/времени создания.</param>
+    /// <param name="isCopyModificationTime">Признак копирования даты/времени модификации.</param>
+    public void Copy(ref Company companyTo, bool isCopyCreationTime = true, bool isCopyModificationTime = true)
     {
-        Id = newCompany.Id;
-        Name = newCompany.Name;
-        Level = newCompany.Level;
-        Comment = newCompany.Comment;
-        if (isUpdateModificationTime)
-        {
-            SetModificationTime(modificationTime ?? DateTime.Now);
-        }
+        companyTo.Id = Id;
+        companyTo.Name = Name;
+        companyTo.Level = Level;
+        companyTo.DecisionMakerId = DecisionMakerId;
+        companyTo.Comment = Comment;
 
-        DecisionMakerId = newCompany.DecisionMakerId;
+        
+        if (isCopyCreationTime)
+            companyTo.CreationTime = CreationTime;
 
-        return this;
+        if (isCopyModificationTime)
+            companyTo.ModificationTime = ModificationTime;
     }
 }

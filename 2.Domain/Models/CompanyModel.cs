@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Domain.Models;
 
 /// <summary>
-/// Модель, для работы с Компаниями.
+/// Модель, для работы с компаниями.
 /// </summary>
 public class CompanyModel
 {
@@ -29,45 +29,55 @@ public class CompanyModel
     /// <summary>
     /// Получить последовательность всех компаний.
     /// </summary>
-    public async Task<IEnumerable<Company>> GetAllCompaniesAsync(bool isIncludeContact = false,
-        string? filterByName = null, CompanyLevelEnm? filterByLevel = null, Company.MainPropEnum? sortBy = null)
+    /// <param name="isIncludeDecisionMaker">Признак включения в каждую компанию связанного объекта
+    /// <see cref="Company.DecisionMaker"/>.</param>
+    /// <param name="filterByName">Фильтр по имени.</param>
+    /// <param name="filterByLevel">Фильтр по уровню доверия.</param>
+    /// <param name="sortBy">Сортировка с использованием перечисления.</param>
+    public async Task<IEnumerable<Company>> GetAllCompaniesAsync(bool isIncludeDecisionMaker = false,
+        string? filterByName = null, CompanyLevelEnm? filterByLevel = null, Company.CompanyMainPropEnum? sortBy = null)
     {
         IQueryable<Company> companies = _dbContext.Companies;
-        if (isIncludeContact)
+        
+        if (isIncludeDecisionMaker)
             // Включаем навигационное свойство
-            companies = companies.Include("DecisionMaker");
+            companies = companies.Include(nameof(Company.DecisionMaker));
 
         if (filterByName != null)
-            // Фильтруем по Имени
+            // Фильтруем по имени
             companies = companies.Where(c => c.Name == filterByName);
          
         if (filterByLevel != null)
-            // Фильтруем по Уровню
+            // Фильтруем по уровню доверия
             companies = companies.Where(c => c.Level == filterByLevel);
             
         // Сортируем
         companies = sortBy switch
         {
-            Company.MainPropEnum.Id => companies.OrderBy(c => c.Id),
-            Company.MainPropEnum.Name => companies.OrderBy(c => c.Name),
-            Company.MainPropEnum.Level => companies.OrderBy(c => c.Level),
-            Company.MainPropEnum.CreationTime => companies.OrderBy(c => c.CreationTime),
-            Company.MainPropEnum.ModificationTime => companies.OrderBy(c => c.ModificationTime),
+            Company.CompanyMainPropEnum.Id => companies.OrderBy(c => c.Id),
+            Company.CompanyMainPropEnum.Name => companies.OrderBy(c => c.Name),
+            Company.CompanyMainPropEnum.Level => companies.OrderBy(c => c.Level),
+            Company.CompanyMainPropEnum.CreationTime => companies.OrderBy(c => c.CreationTime),
+            Company.CompanyMainPropEnum.ModificationTime => companies.OrderBy(c => c.ModificationTime),
             _ => companies
         };
 
         return await companies.ToListAsync();
     }
-    
+
     /// <summary>
     /// Получить компанию по id.
     /// </summary>
-    public async Task<Company?> GetCompanyAsync(Guid id, bool isIncludeContact = false)
+    /// <param name="id">Идентификатор компании.</param>
+    /// <param name="isIncludeDecisionMaker">Признак включения в каждую компанию связанного объекта
+    /// <see cref="Company.DecisionMaker"/>.</param>
+    public async Task<Company?> GetCompanyAsync(Guid id, bool isIncludeDecisionMaker = false)
     {
         IQueryable<Company> companies = _dbContext.Companies;
-        if (isIncludeContact)
+        
+        if (isIncludeDecisionMaker)
             // Включаем навигационное свойство
-            companies = companies.Include("DecisionMaker");
+            companies = companies.Include(nameof(Company.DecisionMaker));
 
         return await companies.FirstOrDefaultAsync(c => c.Id == id);
     }
@@ -75,72 +85,97 @@ public class CompanyModel
     /// <summary>
     /// Добавляем новую компанию в Модель.
     /// </summary>
-    public async Task<Result<bool>> AddCompanyAsync(Company company)
+    /// <param name="company">Добавляемая компания.</param>
+    public async Task<Result<Company>> AddCompanyAsync(Company company)
     {
         try
         {
-            var existingCompany = _dbContext.Companies
-                .FirstOrDefault(c => c.Id.Equals(company.Id));
+            var existingCompany = await _dbContext.Companies
+                .FirstOrDefaultAsync(c => c.Id == company.Id);
+            
             if (existingCompany is not null)
                 // Компания с таким Id уже существует
-                return Result<bool>.Fail(CompanyAlreadyExistsException.Create());
+                return Result<Company>.Fail(CompanyAlreadyExistsException.Create());
 
-            company.Id = Guid.NewGuid();
+            // TODO Удалить?
+            // if (company.Id == Guid.Empty)
+            //     // Присваиваем новый GUID только если он был пустым
+            //     company.Id = Guid.NewGuid();
+            
+            // Добавляем компанию
             await _dbContext.AddAsync(company);
+            
+            // Сохраняем изменения в БД
             await _dbContext.SaveChangesAsync();
             
-            return Result<bool>.Done(true);
+            return Result<Company>.Done(company);
         }
         catch (Exception ex)
         {
-            return Result<bool>.Fail(ModelException.Create(innerException: ex));        
+            return Result<Company>.Fail(ModelException.Create(nameof(CompanyModel), innerException: ex));        
         }
     }
     
     /// <summary>
-    /// Обновляем компанию в Модели.
+    /// Обновляем данные компании в Модели.
     /// </summary>
+    /// <param name="company">Компания, данными которой заменяются данные исходной компании
+    /// (той, у которой Id совпадает с <paramref name="company"/>).</param>
     public async Task<Result<Company>> UpdateCompanyAsync(Company company)
     {
         try
         {
+            // Ищем компанию по Id
             var existingCompany = await _dbContext.Companies.FindAsync(company.Id);
+            
             if (existingCompany is null)
                 // Компании с таким id не существует
                 return Result<Company>.Fail(CompanyNotExistsException.Create());
 
-            existingCompany.Copy(company, null, true);
+            // Копируем данные в найденную компанию
+            company.Copy(ref existingCompany, false, false);
+            existingCompany.SetModificationTime();
+            
+            // Обновляем компанию
             _dbContext.Update(existingCompany);
+            
+            // Сохраняем изменения в БД
             await _dbContext.SaveChangesAsync();
             
             return Result<Company>.Done(existingCompany);
         }
         catch (Exception ex)
         {
-            return Result<Company>.Fail(ModelException.Create(innerException: ex));        
+            return Result<Company>.Fail(ModelException.Create(nameof(CompanyModel), innerException: ex));        
         }
     }
     
     /// <summary>
     /// Удаление компании из Модели.
     /// </summary>
+    /// <param name="id">Идентификатор удаляемой компании.</param>
     public async Task<Result<bool>> DeleteCompanyAsync(Guid id)
     {
         try
         {
+            // Ищем компанию по Id
             var existingCompany = await _dbContext.Companies.FindAsync(id);
+            
             if (existingCompany is null)
                 // Компании с таким id не существует
                 return Result<bool>.Fail(CompanyNotExistsException.Create());
 
+            // Удаляем компанию
             _dbContext.Remove(existingCompany);
+            
+            // Сохраняем изменения в БД
             await _dbContext.SaveChangesAsync();
             
             return Result<bool>.Done(true);
         }
         catch (Exception ex)
         {
-            return Result<bool>.Fail(ModelException.Create(innerException: ex));        
+            return Result<bool>.Fail(ModelException.Create(nameof(CompanyModel), innerException: ex));        
         }
     }
 }

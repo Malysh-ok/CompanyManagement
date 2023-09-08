@@ -1,9 +1,6 @@
 ﻿using DataAccess.DbContext;
-using Infrastructure.AppComponents.AppExceptions;
 using Infrastructure.BaseComponents.Components;
-using Infrastructure.Phrases;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace App.AppInitializer;
@@ -22,7 +19,7 @@ public static class Initializer
     {
         // Инициализация БД
         var dbContext = serviceProvider.GetRequiredService<AppDbContext>();
-        dbContext!.Database.Migrate();          // применяем последнюю миграцию.
+        dbContext.Database.Migrate();          // применяем последнюю миграцию.
 
         // Дальнейшая инициализация
         // ...

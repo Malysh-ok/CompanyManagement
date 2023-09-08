@@ -46,6 +46,8 @@ public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var company = new Company(Guid.NewGuid(), "Литобзор", CompanyLevelEnm.First, "Добавлено с помощью миграции");
+        
         // Создание модели компаний. 
         modelBuilder.Entity<Company>(entity =>
         {
@@ -68,12 +70,12 @@ public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
                 .WithOne()
                 .HasForeignKey<Company>(c => c.DecisionMakerId)
                 .HasConstraintName("FK_Companies_DecisionMakerId")
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
             
                         
             // Заполнение данными
             entity.HasData(
-                new Company(Guid.NewGuid(), "Литобзор", CompanyLevelEnm.First, "Добавлено с помощью миграции")
+                company
             );
 
         });
@@ -90,8 +92,8 @@ public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(c => c.FullName)
                 .HasComputedColumnSql($"{nameof(Contact.Surname)} || ' ' || " +
                                       $"{nameof(Contact.Name)} || " +
-                                      $"IIF({nameof(Contact.MiddleName)} IS NULL, '', ' ' || {nameof(Contact.MiddleName)})"
-                    , stored: true);
+                                      $"IIF({nameof(Contact.MiddleName)} IS NULL, '', ' ' || {nameof(Contact.MiddleName)})", 
+                    stored: true);
 
             entity.HasKey(c => c.Id)
                 .HasName("PK_Contacts");
@@ -100,7 +102,14 @@ public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasOne(с => с.Company)
                 .WithMany(cmp => cmp.Contacts)
                 .HasForeignKey(c => c.CompanyId)
-                .HasConstraintName("FK_Contacts_CompanyId");
+                .HasConstraintName("FK_Contacts_CompanyId")
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            // Заполнение данными
+            entity.HasData(
+                new Contact(Guid.NewGuid(), "Иванов", "Иван", "Иванович",
+                    company.Id, jobTitle: "Менеджер")
+            );
         });
         
         // Создание модели средств коммуникации. 
@@ -124,13 +133,15 @@ public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
             entity.HasOne(с => с.Company)
                 .WithMany(cmp => cmp.Communications)
                 .HasForeignKey(c => c.CompanyId)
-                .HasConstraintName("FK_Communications_CompanyId");
+                .HasConstraintName("FK_Communications_CompanyId")
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Вторичный ключ - Контакт
             entity.HasOne(с => с.Contact)
                 .WithMany(cnt => cnt.Communications)
                 .HasForeignKey(c => c.ContactId)
-                .HasConstraintName("FK_Communications_ContactId");
+                .HasConstraintName("FK_Communications_ContactId")
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

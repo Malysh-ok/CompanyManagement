@@ -3,6 +3,7 @@ using System;
 using DataAccess.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.DbContext.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230830110704_3")]
+    partial class _3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.10");
@@ -23,9 +26,11 @@ namespace DataAccess.DbContext.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("CompanyId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("ContactId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
@@ -89,11 +94,11 @@ namespace DataAccess.DbContext.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("61473611-b9cd-4ea8-bde8-2e1f547c36ec"),
+                            Id = new Guid("feffd126-8c05-48a1-9fd1-233349557ca2"),
                             Comment = "Добавлено с помощью миграции",
-                            CreationTime = new DateTime(2023, 9, 7, 14, 56, 8, 132, DateTimeKind.Local).AddTicks(2639),
+                            CreationTime = new DateTime(2023, 8, 30, 14, 7, 4, 775, DateTimeKind.Local).AddTicks(8302),
                             Level = 3,
-                            ModificationTime = new DateTime(2023, 9, 7, 14, 56, 8, 132, DateTimeKind.Local).AddTicks(2651),
+                            ModificationTime = new DateTime(2023, 8, 30, 14, 7, 4, 775, DateTimeKind.Local).AddTicks(8314),
                             Name = "Литобзор"
                         });
                 });
@@ -110,6 +115,7 @@ namespace DataAccess.DbContext.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FullName")
+                        .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("TEXT")
                         .HasComputedColumnSql("Surname || ' ' || Name || IIF(MiddleName IS NULL, '', ' ' || MiddleName)", true);
@@ -147,14 +153,14 @@ namespace DataAccess.DbContext.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("3c2ed862-69f5-4df3-b6dd-f3f2f2a4e0d3"),
-                            CompanyId = new Guid("61473611-b9cd-4ea8-bde8-2e1f547c36ec"),
-                            CreationTime = new DateTime(2023, 9, 7, 14, 56, 8, 135, DateTimeKind.Local).AddTicks(5290),
+                            Id = new Guid("66348f4d-d3bc-4d8c-8b4a-a4877ba629d9"),
+                            CompanyId = new Guid("feffd126-8c05-48a1-9fd1-233349557ca2"),
+                            CreationTime = new DateTime(2023, 8, 30, 14, 7, 4, 778, DateTimeKind.Local).AddTicks(9012),
                             FullName = "Иванов Иван Иванович",
                             IsDecisionMaker = false,
                             JobTitle = "Менеджер",
                             MiddleName = "Иванович",
-                            ModificationTime = new DateTime(2023, 9, 7, 14, 56, 8, 135, DateTimeKind.Local).AddTicks(5296),
+                            ModificationTime = new DateTime(2023, 8, 30, 14, 7, 4, 778, DateTimeKind.Local).AddTicks(9018),
                             Name = "Иван",
                             Surname = "Иванов"
                         });
@@ -166,12 +172,14 @@ namespace DataAccess.DbContext.Migrations
                         .WithMany("Communications")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK_Communications_CompanyId");
 
                     b.HasOne("DataAccess.Entities.Contact", "Contact")
                         .WithMany("Communications")
                         .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("FK_Communications_ContactId");
 
                     b.Navigation("Company");
@@ -184,7 +192,7 @@ namespace DataAccess.DbContext.Migrations
                     b.HasOne("DataAccess.Entities.Contact", "DecisionMaker")
                         .WithOne()
                         .HasForeignKey("DataAccess.Entities.Company", "DecisionMakerId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_Companies_DecisionMakerId");
 
                     b.Navigation("DecisionMaker");
@@ -195,7 +203,6 @@ namespace DataAccess.DbContext.Migrations
                     b.HasOne("DataAccess.Entities.Company", "Company")
                         .WithMany("Contacts")
                         .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_Contacts_CompanyId");
 
                     b.Navigation("Company");

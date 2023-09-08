@@ -1,4 +1,6 @@
-﻿using DataAccess.Entities.Enums;
+﻿using System.ComponentModel;
+using DataAccess.Entities.Enums;
+using Infrastructure.AppComponents.SwaggerComponents;
 
 namespace DataAccess.Entities;
 
@@ -10,50 +12,59 @@ public class Communication
     /// <summary>
     /// Идентификатор.
     /// </summary>
+    [SwaggerGenGuid]
     public Guid Id  { get; set; }
-    
-    /// <summary>
-    /// Тип связи.
-    /// </summary>
-    public CommunicationTypeEnm Type { get; set; }
-    
-    /// <summary>
-    /// Телефон.
-    /// </summary>
-    public string? PhoneNumber { get; set; } = null!;
-
-    /// <summary>
-    /// Email.
-    /// </summary>
-    public string? Email { get; set; } = null!;
     
     /// <summary>
     /// Идентификатор компании.
     /// </summary>
     /// <remarks>
-    /// Связь с объектом-владельцем Company.
+    /// Связь с сущностью-владельцем Company.
     /// </remarks>
+    [DefaultValue(null)]
     public Guid? CompanyId { get; set; }
         
     /// <summary>
     /// Компания.
     /// </summary>
     /// <inheritdoc cref="CompanyId"/>
-    public Company Company { get; set; } = null!;
+    [DefaultValue(null)]
+    [SwaggerIgnore]
+    public Company? Company { get; set; }
 
     /// <summary>
-    /// Идентификатор контакта.
+    /// Идентификатор сотрудника.
     /// </summary>
     /// <remarks>
-    /// Связь с объектом-владельцем Contact.
+    /// Связь с сущностью-владельцем Contact.
     /// </remarks>
+    [DefaultValue(null)]
     public Guid? ContactId { get; set; }
 
     /// <summary>
-    /// Контакт.
+    /// Сотрудник.
     /// </summary>
     /// <inheritdoc cref="ContactId"/>
-    public Contact Contact { get; set; } = null!;
+    [DefaultValue(null)]
+    [SwaggerIgnore]
+    public Contact? Contact { get; set; }
+    
+    /// <summary>
+    /// Тип связи.
+    /// </summary>
+    public CommunicationTypeEnm Type { get; set; }
+
+    /// <summary>
+    /// Телефон.
+    /// </summary>
+    [DefaultValue(null)]
+    public string? PhoneNumber { get; set; }
+
+    /// <summary>
+    /// Email.
+    /// </summary>
+    [DefaultValue(null)]
+    public string? Email { get; set; }
 
     
     /// <summary>
@@ -72,15 +83,30 @@ public class Communication
     /// <param name="email">Email.</param>
     /// <param name="companyId">Идентификатор компании (связь с таблицей Company).</param>
     /// <param name="contactId">Идентификатор контакта (связь с таблицей Contact).</param>
-    public Communication(Guid id, CommunicationTypeEnm type, 
-        string? phoneNumber = null, string? email = null,
-        Guid? companyId = null, Guid? contactId = null)
+    public Communication(Guid id, Guid? companyId = null, Guid? contactId = null,
+        CommunicationTypeEnm type = CommunicationTypeEnm.All, 
+        string? phoneNumber = null, string? email = null)
+        : this()
     {
         Id = id;
+        CompanyId = companyId;
+        ContactId = contactId;
         Type = type;
         PhoneNumber = phoneNumber;
         Email = email;
-        CompanyId = companyId;
-        ContactId = contactId;
+    }
+    
+    /// <summary>
+    /// Копируем данные в <paramref name="communicationTo"/>.
+    /// </summary>
+    /// <param name="communicationTo">Экземпляр класса, куда копируем денные.</param>
+    public void Copy(ref Communication communicationTo)
+    {
+        communicationTo.Id = Id;
+        communicationTo.CompanyId = CompanyId;
+        communicationTo.ContactId = ContactId;
+        communicationTo.Type = Type;
+        communicationTo.PhoneNumber = PhoneNumber;
+        communicationTo.Email = Email;
     }
 }

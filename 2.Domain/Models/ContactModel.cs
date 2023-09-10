@@ -1,4 +1,5 @@
-﻿using DataAccess.DbContext;
+﻿using System.Diagnostics.CodeAnalysis;
+using DataAccess.DbContext;
 using DataAccess.Entities;
 using Infrastructure.AppComponents.AppExceptions;
 using Infrastructure.AppComponents.AppExceptions.ContactExceptions;
@@ -29,28 +30,33 @@ public class ContactModel
     #region [----- Вспомогательные методы -----]
 
     /// <summary>
-    /// Обновляем ЛПР, в том числе данные у компаний (без сохранения изменений в БД).
+    /// Обновляем ЛПР, в том числе данные у компаний и у средств коммуникации (без сохранения изменений в БД).
     /// </summary>
-    private async Task<Result<bool>> UpdateDecisionMaker(Contact contact)
+    /// <param name="decisionMakerContact">Работник, являющийся ЛПР.</param>
+    private async Task<Result<bool>> UpdateDecisionMaker(Contact decisionMakerContact)
     {
         try
         {
             // Удаляем у всех ЛПР (за исключением contact) данный признак.
             var existingDecisionMakers = _dbContext.Contacts.Where(c => 
-                c.IsDecisionMaker && c.Id != contact.Id);
+                c.IsDecisionMaker && c.CompanyId == decisionMakerContact.CompanyId && c.Id != decisionMakerContact.Id);
             await existingDecisionMakers.ForEachAsync(c => c.IsDecisionMaker = false);
         
-            // Заполняем ЛПР в сущности-владельце Company
-            // (делаем с помощью IQueryable, чтобы осуществлялся только один запрос к БД)
-            if (contact.CompanyId != null)
+            if (decisionMakerContact.CompanyId != null)
             {
+                // Заполняем ЛПР в сущности-владельце Company
+                // (делаем с помощью IQueryable, чтобы осуществлялся только один запрос к БД)
                 var companies = _dbContext.Companies.Where(c =>
-                    c.Id == (Guid)contact.CompanyId);
-                await companies.ForEachAsync(c => c.DecisionMakerId = contact.Id);
+                    c.Id == (Guid)decisionMakerContact.CompanyId);
+                await companies.ForEachAsync(c => c.DecisionMakerId = decisionMakerContact.Id);
+
+                // Заполняем ЛПР в сущности-владельце Communication
+                // (делаем с помощью IQueryable, чтобы осуществлялся только один запрос к БД)
+                var communications = _dbContext.Communications.Where(c =>
+                    c.CompanyId == (Guid)decisionMakerContact.CompanyId &&
+                    c.ContactId == null);
+                await communications.ForEachAsync(c => c.ContactId = decisionMakerContact.Id);
             }
-            
-            // !!!!!!!!!!!!!!!
-            
         }
         catch (Exception ex)
         {
@@ -68,12 +74,15 @@ public class ContactModel
     /// <param name="isIncludeCompany">Признак включения к каждому сотруднику связанного объекта
     /// <see cref="Contact.Company"/>.</param>
     /// <param name="filterByFullName">Фильтр по полному имени.</param>
-    /// <param name="filterByCompanyName">Фильтр по названии компании.</param>
+    /// <param name="filterByCompanyName">Фильтр по названию компании.</param>
     /// <param name="filterByJobTitle">Фильтр по должности.</param>
+    /// <param name="filterByDecisionMaker">Фильтр по признаку ЛПР.</param>
     /// <param name="sortBy">Сортировка с использованием перечисления.</param>
-    // TODO: Сделать сортировку по названию компании?
-    public async Task<IEnumerable<Contact>> GetAllContactsAsync(bool isIncludeCompany = false,
-        string? filterByFullName = null, string? filterByCompanyName = null, string? filterByJobTitle = null,
+    public async Task<IEnumerable<Contact>> GetAllContactsAsync(bool isIncludeCompany = false, 
+        string? filterByFullName = null, 
+        string? filterByCompanyName = null, 
+        string? filterByJobTitle = null,
+        bool? filterByDecisionMaker = null,
         Contact.ContactMainPropEnum? sortBy = null)
     {
         IQueryable<Contact> contacts = _dbContext.Contacts;
@@ -87,12 +96,16 @@ public class ContactModel
             contacts = contacts.Where(c => c.FullName == filterByFullName);
          
         if (filterByCompanyName != null)
-            // Фильтруем по названию компании TODO: проверить!
+            // Фильтруем по названию компании
             contacts = contacts.Where(c => c.Company != null && c.Company.Name == filterByCompanyName);
             
         if (filterByJobTitle != null)
             // Фильтруем по должности
             contacts = contacts.Where(c => c.JobTitle == filterByJobTitle);
+        
+        if (filterByDecisionMaker != null)
+            // Фильтруем по флагу ЛПР
+            contacts = contacts.Where(c => c.IsDecisionMaker == filterByDecisionMaker);
 
         // Сортируем
         contacts = sortBy switch
@@ -201,6 +214,52 @@ public class ContactModel
         catch (Exception ex)
         {
             return Result<Contact>.Fail(ModelException.Create(nameof(ContactModel), innerException: ex));        
+        }
+    }
+    
+    /// <summary>
+    /// Обновляем список сотрудников в Модели.
+    /// </summary>
+    /// <param name="contacts">Сотрудники, данными которых заменяются данные исходных сотрудников
+    /// (тех, у которых Id совпадает с Id <paramref name="contacts"/>).</param>
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public async Task<Result<int>> UpdateContactRangeAsync(List<Contact> contacts)
+    {
+        try
+        {
+            // Ищем сотрудников в БД, у которых Id совпадает с Id сотрудников параметра contacts
+            var contactIds = contacts.Select(c => c.Id).ToList();
+            var existingContacts = 
+                _dbContext.Contacts.Where(c => contactIds.Contains(c.Id));
+            
+            // Копируем данные параметра contacts в данные найденных сотрудников
+            foreach (var existingContact_ in existingContacts)
+            {
+                var existingContact = existingContact_;
+                contacts.First(c => c.Id == existingContact.Id)
+                    .Copy(ref existingContact, false, false);
+                existingContact.SetModificationTime();
+            
+                // Обновляем сотрудника
+                _dbContext.Update(existingContact);
+            
+                // Если contact - ЛПР
+                if (existingContact.IsDecisionMaker)
+                {
+                    var result = await UpdateDecisionMaker(existingContact);
+                    if (!result)
+                        return Result<int>.Fail(result.Excptn);
+                }
+            }
+            
+            // Сохраняем изменения в БД
+            var changesCount = await _dbContext.SaveChangesAsync();
+            
+            return Result<int>.Done(changesCount);
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Fail(ModelException.Create(nameof(ContactModel), innerException: ex));        
         }
     }
     

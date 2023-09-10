@@ -46,7 +46,37 @@ public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var company = new Company(Guid.NewGuid(), "Литобзор", CompanyLevelEnm.First, "Добавлено с помощью миграции");
+        // Данные для занесения в БД
+        var companies = new List<Company>
+        {
+            new(Guid.NewGuid(), "СССР", CompanyLevelEnm.First, "Добавлено с помощью миграции"),
+            new(Guid.NewGuid(), "Китай", CompanyLevelEnm.Second, "Добавлено с помощью миграции"),
+            new(Guid.NewGuid(), "Noname", CompanyLevelEnm.Third, "Добавлено с помощью миграции"),
+        };
+        var contacts = new List<Contact>
+        {
+            new(Guid.NewGuid(), "Иванов", "Иван", null,
+                companies[0].Id, true, "Менеджер"),
+            new(Guid.NewGuid(), "Петров", "Петр", null,
+                companies[0].Id, false, "Водитель"),
+            new(Guid.NewGuid(), "Сидоров", "Сидор", null,
+                companies[1].Id, true, "Менеджер"),
+            new(Guid.NewGuid(), "Кузьмин", "Кузьма", null,
+                companies[2].Id, false, "Механик"),
+        };
+        var communications = new List<Communication>
+        {
+            new(Guid.NewGuid(), companies[0].Id, null,  // ЛПР
+                CommunicationTypeEnm.Phone, "+70000000000"),
+            new(Guid.NewGuid(), companies[0].Id, contacts[1].Id, 
+                CommunicationTypeEnm.Phone, "+70000000001"),
+            new(Guid.NewGuid(), companies[1].Id, null,    // ЛПР
+                CommunicationTypeEnm.Phone, "+71000000000"),
+            new(Guid.NewGuid(), companies[2].Id, contacts[3].Id, 
+                CommunicationTypeEnm.Phone, "+72000000000"),
+            new(Guid.NewGuid(), null, contacts[3].Id, 
+                CommunicationTypeEnm.Phone, "+72000000001"),
+        };
         
         // Создание модели компаний. 
         modelBuilder.Entity<Company>(entity =>
@@ -71,13 +101,9 @@ public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
                 .HasForeignKey<Company>(c => c.DecisionMakerId)
                 .HasConstraintName("FK_Companies_DecisionMakerId")
                 .OnDelete(DeleteBehavior.SetNull);
-            
                         
             // Заполнение данными
-            entity.HasData(
-                company
-            );
-
+            entity.HasData(companies);
         });
         
         // Создание модели сотрудников. 
@@ -106,10 +132,7 @@ public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
                 .OnDelete(DeleteBehavior.Cascade);
             
             // Заполнение данными
-            entity.HasData(
-                new Contact(Guid.NewGuid(), "Иванов", "Иван", "Иванович",
-                    company.Id, jobTitle: "Менеджер")
-            );
+            entity.HasData(contacts);
         });
         
         // Создание модели средств коммуникации. 
@@ -142,6 +165,9 @@ public sealed class AppDbContext : Microsoft.EntityFrameworkCore.DbContext
                 .HasForeignKey(c => c.ContactId)
                 .HasConstraintName("FK_Communications_ContactId")
                 .OnDelete(DeleteBehavior.SetNull);
+            
+            // Заполнение данными
+            entity.HasData(communications);
         });
     }
 }

@@ -9,24 +9,21 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// builder.Services.AddMvc().ConfigureApiBehaviorOptions(options => {
-//     options.SuppressInferBindingSourcesForParameters = true;
-// });
-
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     // Добавляем автоматическое преобразование числовых значений перечислений к их названию.
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.JsonSerializerOptions.Converters.Add(
+        new JsonStringEnumConverter()
+    );
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
+// Настраиваем Swagger
 builder.Services.AddSwaggerGen(options =>
 {
-    // Настраиваем Swagger
-
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
@@ -35,13 +32,14 @@ builder.Services.AddSwaggerGen(options =>
     
     options.EnableAnnotations();
 
+    options.UseInlineDefinitionsForEnums();     // Возможность значений по умолчанию для Enum
+    
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
     
     options.SchemaFilter<SwaggerIgnoreFilter>();
     options.SchemaFilter<SwaggerGenGuidFilter>();
 });
-// builder.Services.AddSwaggerGenNewtonsoftSupport();
 
 // Получаем Кофигуратор БД
 var dbConfigurator = DbConfigurator.CreateDbConfiguratorWithAppData(true);
@@ -74,6 +72,6 @@ app.MapControllers();
 
 // Инициализируем приложение
 using var serviceScope = app.Services.CreateScope();
-Initializer.Init(serviceScope.ServiceProvider);
+await Initializer.Init(serviceScope.ServiceProvider);
 
 app.Run();

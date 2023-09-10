@@ -5,8 +5,8 @@
 /// </summary>
 public enum CompanyLevelEnm
 {
-    Third = 1,
+    Premium = -1,
+    First = 1,
     Second,
-    First,
-    Premium
+    Third,
 }

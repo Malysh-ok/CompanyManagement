@@ -32,15 +32,18 @@ public class CompanyController : Controller
     /// </summary>
     /// <param name="filterByName">Фильтр по имени.</param>
     /// <param name="filterByLevel">Фильтр по уровню доверия.</param>
+    /// <param name="filterByDecisionMaker">Фильтр по ФИО ЛПР (приблизительное совпадение).</param>
     /// <param name="sortBy">Сортировка с использованием перечисления.</param>
     [HttpGet("GetAll")]
     [Produces("application/json")]
     public async Task<IEnumerable<CompanyToViewDto>> GetAll(
-        [FromQuery] string? filterByName = null, [FromQuery] CompanyLevelEnm? filterByLevel = null,
+        [FromQuery] string? filterByName = null, 
+        [FromQuery] CompanyLevelEnm? filterByLevel = null,
+        [FromQuery] string? filterByDecisionMaker = null,
         [FromQuery] Company.CompanyMainPropEnum? sortBy = null)
     {
         var companies = await _companyModel.GetAllCompaniesAsync(true,
-            filterByName, filterByLevel, sortBy);
+            filterByName, filterByLevel, filterByDecisionMaker, sortBy);
 
         return CompanyToViewDto.GetCollection(companies);
     }

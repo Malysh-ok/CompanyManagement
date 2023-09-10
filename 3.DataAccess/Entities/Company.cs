@@ -42,6 +42,7 @@ public class Company
     /// Уровень доверия.
     /// </summary>
     [Required]
+    [DefaultValue(CompanyLevelEnm.Third)]
     public CompanyLevelEnm Level  { get; set; }
     
     /// <summary>

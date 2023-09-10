@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\2.Domain\Models\Models.csproj" />
       <ProjectReference Include="..\..\3.DataAccess\DbContext\DbContext.csproj" />
       <ProjectReference Include="..\..\4.Infrastructure\AppComponents\AppExceptions\AppExceptions.csproj" />
       <ProjectReference Include="..\..\4.Infrastructure\BaseComponents\BaseComponents.csproj" />

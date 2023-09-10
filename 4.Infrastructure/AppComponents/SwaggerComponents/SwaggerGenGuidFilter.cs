@@ -1,11 +1,5 @@
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Infrastructure.BaseExtensions;
-using Infrastructure.BaseExtensions.Collections;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Infrastructure.AppComponents.SwaggerComponents;

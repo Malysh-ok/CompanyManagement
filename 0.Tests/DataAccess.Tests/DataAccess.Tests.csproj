@@ -15,6 +15,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\3.DataAccess\DbConfigureManagement\DbConfigureManagement.csproj" />
+      <ProjectReference Include="..\..\3.DataAccess\DbContext\DbContext.csproj" />
     </ItemGroup>
 
 </Project>

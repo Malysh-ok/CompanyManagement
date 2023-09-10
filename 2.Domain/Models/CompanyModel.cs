@@ -26,6 +26,48 @@ public class CompanyModel
         _dbContext = dbContext;
     }
 
+    #region [----- Вспомогательные методы -----]
+
+    /// <summary>
+    /// Обновляем ЛПР, в том числе данные у средств коммуникации (без сохранения изменений в БД).
+    /// </summary>
+    /// <param name="decisionMakerId">Идентификатор работника, являющегося ЛПР.</param>
+    private async Task<Result<bool>> UpdateDecisionMaker(Guid decisionMakerId)
+    {
+        try
+        {
+            // Получаем сотрудника (ЛПР) из БД
+            var decisionMakerContact = await _dbContext.Contacts.FindAsync(decisionMakerId);
+
+            if (decisionMakerContact is not null)
+            {
+                // Выставляем признак ЛПР у сотрудника
+                decisionMakerContact.IsDecisionMaker = true;
+                
+                // Удаляем у всех ЛПР (за исключением contact) данный признак.
+                var existingDecisionMakers = _dbContext.Contacts.Where(c =>
+                    c.IsDecisionMaker && c.CompanyId == decisionMakerContact.CompanyId &&
+                    c.Id != decisionMakerId);
+                await existingDecisionMakers.ForEachAsync(c => c.IsDecisionMaker = false);
+
+                // Заполняем ЛПР в сущности-владельце Communication
+                // (делаем с помощью IQueryable, чтобы осуществлялся только один запрос к БД)
+                var communications = _dbContext.Communications.Where(c =>
+                    c.CompanyId == (Guid)decisionMakerContact.CompanyId! &&
+                    c.ContactId == null);
+                await communications.ForEachAsync(c => c.ContactId = decisionMakerId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Result<bool>.Fail(ex);
+        }
+        
+        return Result<bool>.Done(true);
+    }
+    
+    #endregion
+
     /// <summary>
     /// Получить последовательность всех компаний.
     /// </summary>
@@ -33,9 +75,13 @@ public class CompanyModel
     /// <see cref="Company.DecisionMaker"/>.</param>
     /// <param name="filterByName">Фильтр по имени.</param>
     /// <param name="filterByLevel">Фильтр по уровню доверия.</param>
+    /// <param name="filterByDecisionMaker">Фильтр по ФИО ЛПР (приблизительное совпадение).</param>
     /// <param name="sortBy">Сортировка с использованием перечисления.</param>
     public async Task<IEnumerable<Company>> GetAllCompaniesAsync(bool isIncludeDecisionMaker = false,
-        string? filterByName = null, CompanyLevelEnm? filterByLevel = null, Company.CompanyMainPropEnum? sortBy = null)
+        string? filterByName = null, 
+        CompanyLevelEnm? filterByLevel = null, 
+        string? filterByDecisionMaker = null,
+        Company.CompanyMainPropEnum? sortBy = null)
     {
         IQueryable<Company> companies = _dbContext.Companies;
         
@@ -51,6 +97,11 @@ public class CompanyModel
             // Фильтруем по уровню доверия
             companies = companies.Where(c => c.Level == filterByLevel);
             
+        if (filterByDecisionMaker != null)
+            // Фильтруем по ФИО ЛПР
+            companies = companies.Where(c => 
+                c.DecisionMaker != null && c.DecisionMaker.FullName!.Contains(filterByDecisionMaker));
+
         // Сортируем
         companies = sortBy switch
         {
@@ -96,11 +147,14 @@ public class CompanyModel
             if (existingCompany is not null)
                 // Компания с таким Id уже существует
                 return Result<Company>.Fail(CompanyAlreadyExistsException.Create());
-
-            // TODO Удалить?
-            // if (company.Id == Guid.Empty)
-            //     // Присваиваем новый GUID только если он был пустым
-            //     company.Id = Guid.NewGuid();
+            
+            // Если у компании указан ЛПР
+            if (company.DecisionMakerId is not null)
+            {
+                 var result = await UpdateDecisionMaker((Guid)company.DecisionMakerId);
+                 if (!result)
+                     return Result<Company>.Fail(result.Excptn);
+            }
             
             // Добавляем компанию
             await _dbContext.AddAsync(company);
@@ -135,6 +189,14 @@ public class CompanyModel
             // Копируем данные в найденную компанию
             company.Copy(ref existingCompany, false, false);
             existingCompany.SetModificationTime();
+            
+            // Если у компании указан ЛПР
+            if (company.DecisionMakerId is not null)
+            {
+                var result = await UpdateDecisionMaker((Guid)company.DecisionMakerId);
+                if (!result)
+                    return Result<Company>.Fail(result.Excptn);
+            }
             
             // Обновляем компанию
             _dbContext.Update(existingCompany);

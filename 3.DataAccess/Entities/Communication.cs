@@ -52,6 +52,7 @@ public class Communication
     /// <summary>
     /// Тип связи.
     /// </summary>
+    [DefaultValue(CommunicationTypeEnm.Phone)]
     public CommunicationTypeEnm Type { get; set; }
 
     /// <summary>

@@ -38,7 +38,7 @@ public class CommunicationModel
         {
             CommunicationTypeEnm.Phone => communication.PhoneNumber is not null,
             CommunicationTypeEnm.Email => communication.Email is not null,
-            _ => (communication.PhoneNumber is not null) & (communication.Email is not null)
+            _ => (communication.PhoneNumber is not null) && (communication.Email is not null)
         };
 
         return isOk
@@ -51,7 +51,7 @@ public class CommunicationModel
     /// </summary>
     private Result<Communication> ValidateOwnerEntity(Communication communication)
     {
-        if ((communication.CompanyId is null) & (communication.ContactId is null))
+        if ((communication.CompanyId is null) && (communication.ContactId is null))
             // Исключение: одно из двух значений является обязательным
             return Result<Communication>.Fail(CommunicationOwnerEntityException.Create());
 
@@ -251,7 +251,7 @@ public class CommunicationModel
             var communications = _dbContext.Communications
                 .Where(c => c.ContactId == contactId);
 
-            if (await _dbContext.Contacts.FindAsync(contactId) is not null &
+            if (await _dbContext.Contacts.FindAsync(contactId) is not null &&
                 (await communications.ToListAsync()).Any())
                 // Удаление по невозможно: присутствует связь c сущностью-владельцем
                 return Result<bool>.Fail(CommunicationDeletingByContactIdException.Create());

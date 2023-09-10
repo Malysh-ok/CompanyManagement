@@ -32,17 +32,20 @@ public class ContactController : Controller
     /// <param name="filterByFullName">Фильтр по полному имени.</param>
     /// <param name="filterByCompanyName">Фильтр по названии компании.</param>
     /// <param name="filterByJobTitle">Фильтр по должности.</param>
+    /// <param name="filterByDecisionMaker">Фильтр по признаку ЛПР.</param>
     /// <param name="sortBy">Сортировка с использованием перечисления.</param>
 
     [HttpGet("GetAll")]
     [Produces("application/json")]
     public async Task<IEnumerable<ContactToViewDto>> GetAll(
-        [FromQuery] string? filterByFullName = null, [FromQuery] string? filterByCompanyName = null, 
+        [FromQuery] string? filterByFullName = null, 
+        [FromQuery] string? filterByCompanyName = null, 
         [FromQuery] string? filterByJobTitle = null,
+        [FromQuery] bool? filterByDecisionMaker = null,
         [FromQuery] Contact.ContactMainPropEnum? sortBy = null)
     {
         var contacts = await _contactModel.GetAllContactsAsync(true,
-            filterByFullName, filterByCompanyName, filterByJobTitle, sortBy);
+            filterByFullName, filterByCompanyName, filterByJobTitle, filterByDecisionMaker, sortBy);
 
         return ContactToViewDto.GetCollection(contacts);
     }

@@ -5,7 +5,7 @@
 /// </summary>
 public enum CommunicationTypeEnm
 {
-    Phone = 1,
+    All = 1,
+    Phone,
     Email,
-    All
 }

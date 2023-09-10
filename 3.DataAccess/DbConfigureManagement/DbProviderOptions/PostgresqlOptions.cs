@@ -81,7 +81,7 @@ public class PostgresqlOptions : IDbProviderOptions
     /// <inheritdoc />
     public string GetConnectionString(IConfiguration configuration)
     {
-        // TODO: Не тестировалось!
+        // TODO: В PostgreeSQL не тестировалось!
         return configuration.GetConnectionString("PostgreSqlConnection") ?? string.Empty;
     }
 

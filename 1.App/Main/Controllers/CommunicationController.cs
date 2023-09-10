@@ -34,7 +34,8 @@ public class CommunicationController : Controller
     [Produces("application/json")]
     public async Task<IEnumerable<CommunicationToViewDto>> GetAll()
     {
-        var communications = await _communicationModel.GetAllCommunicationsAsync(true);
+        var communications = 
+            await _communicationModel.GetAllCommunicationsAsync(true, true);
 
         return CommunicationToViewDto.GetCollection(communications);
     }
